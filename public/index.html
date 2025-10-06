@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amoeba Database</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="top-bar">
+        <div class="logo">Amoeba DataBase</div>
+        <nav class="top-nav">
+            <ul>
+                <li><a href="#">Tools</a></li>
+                <li><a href="#">Data</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="search-section">
+                <h3>Search for</h3>
+                <input type="text" id="searchInput" placeholder="Filter the searches below...">
+            </div>
+
+            <div class="sidebar-nav">
+                <h4 id="organisms-toggle" class="sidebar-item">
+                    <span class="triangle">▶</span> Organisms
+                </h4>
+                <ul id="organisms-list" class="hidden">
+                    <li>
+                        <div class="sidebar-item sublist-toggle" data-target="histolytica-sublist">
+                            <span class="triangle">▶</span> Entamoeba Histolytica
+                        </div>
+                        <ul id="histolytica-sublist" class="hidden">
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Histolytica Transcriptomics">Transcriptomics</a></div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Histolytica Protein Sequence">Protein Sequence</a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Histolytica Gene">Gene</a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Histolytica Genome">Genome</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <div class="sidebar-item sublist-toggle" data-target="invadens-sublist">
+                            <span class="triangle">▶</span> Entamoeba Invadens
+                        </div>
+                        <ul id="invadens-sublist" class="hidden">
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Invadens Transcriptomics">Transcriptomics</a></div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Invadens Protein Sequence">Protein Sequence</a></div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="content">
+            <div id="resultsContainer">
+                <div class="info-card">
+                    <h4>Information 1</h4>
+                    <p>Details about Information 1 will be displayed here.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Information 2</h4>
+                    <p>Details about Information 2 will be displayed here.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Information 3</h4>
+                    <p>Details about Information 3 will be displayed here.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
