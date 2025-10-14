@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amoeba Database</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="top-bar">
+        <div class="logo">Amoeba DataBase</div>
+        <div class="header-right">
+            <!-- Transcript Search -->
+            <div class="data-search" id="transcriptSearchContainer" style="display: none;">
+                <input type="text" id="transcriptSearchInput" placeholder="Enter Transcript ID (e.g., EHI_151170A)" />
+                <button id="transcriptSearchBtn">Search</button>
+            </div>
+            <!-- Protein Search -->
+            <div class="data-search" id="proteinSearchContainer" style="display: none;">
+                <input type="text" id="proteinSearchInput" placeholder="Enter Protein ID (e.g., EHI_151170A-p1)" />
+                <button id="proteinSearchBtn">Search</button>
+            </div>
+            <!-- Gene Search -->
+            <div class="data-search" id="geneSearchContainer" style="display: none;">
+                <input type="text" id="geneSearchInput" placeholder="Enter Gene ID (e.g., EHI_151170)" />
+                <button id="geneSearchBtn">Search</button>
+            </div>
+            <!-- Genome Search -->
+            <div class="data-search" id="genomeSearchContainer" style="display: none;">
+                <input type="text" id="genomeSearchInput" placeholder="Enter Sequence ID" />
+                <button id="genomeSearchBtn">Search</button>
+            </div>
+            <!-- CDS Search -->
+            <div class="data-search" id="cdsSearchContainer" style="display: none;">
+                <input type="text" id="cdsSearchInput" placeholder="Enter CDS ID (e.g., EIN_000210-t26_1)" />
+                <button id="cdsSearchBtn">Search</button>
+            </div>
+            <!-- Codon Usage Search -->
+            <div class="data-search" id="codonUsageSearchContainer" style="display: none;">
+                <input type="text" id="codonUsageSearchInput" placeholder="Enter Codon (e.g., UAA, GCU)" />
+                <button id="codonUsageSearchBtn">Search</button>
+            </div>
+            <!-- Gene Aliases Search -->
+            <div class="data-search" id="geneAliasesSearchContainer" style="display: none;">
+                <input type="text" id="geneAliasesSearchInput" placeholder="Enter Gene ID (e.g., EIN_059730)" />
+                <button id="geneAliasesSearchBtn">Search</button>
+            </div>
+            <!-- Full GFF Search -->
+            <div class="data-search" id="fullGFFSearchContainer" style="display: none;">
+                <input type="text" id="fullGFFSearchInput" placeholder="Enter Sequence ID (e.g., KB207260)" />
+                <button id="fullGFFSearchBtn">Search</button>
+            </div>
+            <!-- ORF Search -->
+            <div class="data-search" id="orfSearchContainer" style="display: none;">
+                <input type="text" id="orfSearchInput" placeholder="Enter Sequence ID (e.g., KB206125)" />
+                <button id="orfSearchBtn">Search</button>
+            </div>
+            <nav class="top-nav">
+                <ul>
+                    <li><a href="#">Tools</a></li>
+                    <li><a href="#">Data</a></li>
+                    <li><a href="#">About</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="search-section">
+                <h3>Search for</h3>
+                <input type="text" id="searchInput" placeholder="Filter the searches below...">
+            </div>
+
+            <div class="sidebar-nav">
+                <h4 id="organisms-toggle" class="sidebar-item">
+                    <span class="triangle">▶</span> Organisms
+                </h4>
+                <ul id="organisms-list" class="hidden">
+                    <li>
+                        <div class="sidebar-item sublist-toggle" data-target="histolytica-sublist">
+                            <span class="triangle">▶</span> Entamoeba Histolytica
+                        </div>
+                        <ul id="histolytica-sublist" class="hidden">
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Histolytica Transcriptomics">Transcriptomics</a></div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Histolytica Protein Sequence">Protein Sequence</a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Histolytica Gene">Gene</a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Histolytica Genome">Genome</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <div class="sidebar-item sublist-toggle" data-target="invadens-sublist">
+                            <span class="triangle">▶</span> Entamoeba Invadens
+                        </div>
+                        <ul id="invadens-sublist" class="hidden">
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Invadens Transcriptomics">Transcriptomics</a></div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Invadens Protein Sequence">Protein Sequence</a></div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Invadens Full GFF">Full GFF</a></div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Invadens CDS">CDS</a></div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Invadens Codon usage">Codon usage</a></div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Invadens Gene aliases">Gene aliases</a></div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Invadens Genome">Genome</a></div>
+                            </li>
+                            <li>
+                                <div class="sidebar-item"><a href="#" class="organism-link"
+                                        data-organism="Entamoeba Invadens ORF">ORF</a></div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="content">
+            <div id="backButtonContainer" style="display: none;">
+                <button id="backButton" class="back-btn">
+                    <span class="back-arrow">←</span> Back to Home
+                </button>
+            </div>
+            <div id="resultsContainer">
+                <div class="info-card">
+                    <h4>Information 1</h4>
+                    <p>Details about Information 1 will be displayed here.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Information 2</h4>
+                    <p>Details about Information 2 will be displayed here.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Information 3</h4>
+                    <p>Details about Information 3 will be displayed here.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
