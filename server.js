@@ -1,9 +1,14 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const port = 3000;
+
+// Middleware for parsing JSON bodies
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // MongoDB connection URI
 const uri = "mongodb://localhost:27017";
@@ -15,6 +20,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Root route to serve the HTML file
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Admin panel route
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 // Test endpoint to check if protein data is accessible
@@ -81,6 +91,283 @@ app.get('/search', async (req, res) => {
     }
 });
 
+// Admin API Endpoints
+
+// Helper function to get file path based on organism and data type
+function getDataFilePath(organism, dataType) {
+    const basePath = path.join(__dirname, 'public', 'Data');
+    
+    if (organism === 'histolytica') {
+        const organismPath = path.join(basePath, 'Entamoeba Histolytica');
+        switch (dataType) {
+            case 'transcriptomics':
+                return path.join(organismPath, 'annotated_transcripts.json');
+            case 'protein':
+                return path.join(organismPath, 'annotated_protein.json');
+            case 'gene':
+                return path.join(organismPath, 'gene.json');
+            case 'genome':
+                return path.join(organismPath, 'genome.json');
+        }
+    } else if (organism === 'invadens') {
+        const organismPath = path.join(basePath, 'Entamoeba Invadens');
+        switch (dataType) {
+            case 'transcriptomics':
+                return path.join(organismPath, 'EinvadensIP1_AnnotatedTranscripts.json');
+            case 'protein':
+                return path.join(organismPath, 'EinvadensIP1_AnnotatedProteins.json');
+            case 'cds':
+                return path.join(organismPath, 'EinvadensIP1_AnnotatedCDSs.json');
+            case 'genome':
+                return path.join(organismPath, 'EinvadensIP1_Genome.json');
+            case 'codon-usage':
+                return path.join(organismPath, 'EinvadensIP1_CodonUsage.json');
+            case 'gene-aliases':
+                return path.join(organismPath, 'EinvadensIP1_GeneAliases.json');
+            case 'full-gff':
+                return path.join(organismPath, 'AmoebaDB-68_EinvadensIP1.json');
+        }
+    }
+    return null;
+}
+
+// Create backup of data file
+function createBackup(filePath) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupPath = filePath.replace('.json', `_backup_${timestamp}.json`);
+    
+    try {
+        if (fs.existsSync(filePath)) {
+            fs.copyFileSync(filePath, backupPath);
+            console.log(`Backup created: ${backupPath}`);
+            return backupPath;
+        }
+    } catch (error) {
+        console.error('Error creating backup:', error);
+    }
+    return null;
+}
+
+// Admin authentication middleware (basic implementation)
+function authenticateAdmin(req, res, next) {
+    // In production, implement proper JWT or session-based authentication
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || authHeader !== 'Bearer admin:amoeba2024') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    next();
+}
+
+// Get data for admin panel
+app.get('/admin/api/data/:organism/:dataType', authenticateAdmin, (req, res) => {
+    const { organism, dataType } = req.params;
+    const filePath = getDataFilePath(organism, dataType);
+    
+    if (!filePath || !fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Data file not found' });
+    }
+    
+    try {
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        res.json({
+            success: true,
+            data: data,
+            count: data.length,
+            filePath: filePath
+        });
+    } catch (error) {
+        console.error('Error reading data file:', error);
+        res.status(500).json({ error: 'Error reading data file' });
+    }
+});
+
+// Update entire dataset
+app.put('/admin/api/data/:organism/:dataType', authenticateAdmin, (req, res) => {
+    const { organism, dataType } = req.params;
+    const { data } = req.body;
+    const filePath = getDataFilePath(organism, dataType);
+    
+    if (!filePath) {
+        return res.status(404).json({ error: 'Invalid organism or data type' });
+    }
+    
+    try {
+        // Create backup before modification
+        const backupPath = createBackup(filePath);
+        
+        // Write new data
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+        
+        console.log(`Data updated for ${organism}/${dataType}`);
+        res.json({
+            success: true,
+            message: 'Data updated successfully',
+            backupPath: backupPath,
+            count: data.length
+        });
+    } catch (error) {
+        console.error('Error updating data file:', error);
+        res.status(500).json({ error: 'Error updating data file' });
+    }
+});
+
+// Add single entry
+app.post('/admin/api/data/:organism/:dataType/entry', authenticateAdmin, (req, res) => {
+    const { organism, dataType } = req.params;
+    const { entry } = req.body;
+    const filePath = getDataFilePath(organism, dataType);
+    
+    if (!filePath || !fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Data file not found' });
+    }
+    
+    try {
+        // Read current data
+        const currentData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        
+        // Create backup
+        createBackup(filePath);
+        
+        // Add new entry
+        currentData.push(entry);
+        
+        // Write updated data
+        fs.writeFileSync(filePath, JSON.stringify(currentData, null, 2));
+        
+        console.log(`Entry added to ${organism}/${dataType}`);
+        res.json({
+            success: true,
+            message: 'Entry added successfully',
+            count: currentData.length
+        });
+    } catch (error) {
+        console.error('Error adding entry:', error);
+        res.status(500).json({ error: 'Error adding entry' });
+    }
+});
+
+// Update single entry
+app.put('/admin/api/data/:organism/:dataType/entry/:index', authenticateAdmin, (req, res) => {
+    const { organism, dataType, index } = req.params;
+    const { entry } = req.body;
+    const filePath = getDataFilePath(organism, dataType);
+    
+    if (!filePath || !fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Data file not found' });
+    }
+    
+    try {
+        // Read current data
+        const currentData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const entryIndex = parseInt(index);
+        
+        if (entryIndex < 0 || entryIndex >= currentData.length) {
+            return res.status(400).json({ error: 'Invalid entry index' });
+        }
+        
+        // Create backup
+        createBackup(filePath);
+        
+        // Update entry
+        currentData[entryIndex] = entry;
+        
+        // Write updated data
+        fs.writeFileSync(filePath, JSON.stringify(currentData, null, 2));
+        
+        console.log(`Entry updated in ${organism}/${dataType} at index ${entryIndex}`);
+        res.json({
+            success: true,
+            message: 'Entry updated successfully'
+        });
+    } catch (error) {
+        console.error('Error updating entry:', error);
+        res.status(500).json({ error: 'Error updating entry' });
+    }
+});
+
+// Delete single entry
+app.delete('/admin/api/data/:organism/:dataType/entry/:index', authenticateAdmin, (req, res) => {
+    const { organism, dataType, index } = req.params;
+    const filePath = getDataFilePath(organism, dataType);
+    
+    if (!filePath || !fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Data file not found' });
+    }
+    
+    try {
+        // Read current data
+        const currentData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const entryIndex = parseInt(index);
+        
+        if (entryIndex < 0 || entryIndex >= currentData.length) {
+            return res.status(400).json({ error: 'Invalid entry index' });
+        }
+        
+        // Create backup
+        createBackup(filePath);
+        
+        // Remove entry
+        currentData.splice(entryIndex, 1);
+        
+        // Write updated data
+        fs.writeFileSync(filePath, JSON.stringify(currentData, null, 2));
+        
+        console.log(`Entry deleted from ${organism}/${dataType} at index ${entryIndex}`);
+        res.json({
+            success: true,
+            message: 'Entry deleted successfully',
+            count: currentData.length
+        });
+    } catch (error) {
+        console.error('Error deleting entry:', error);
+        res.status(500).json({ error: 'Error deleting entry' });
+    }
+});
+
+// Get backup files list
+app.get('/admin/api/backups', authenticateAdmin, (req, res) => {
+    const dataPath = path.join(__dirname, 'public', 'Data');
+    const backupFiles = [];
+    
+    try {
+        // Search for backup files in both organism directories
+        const searchBackups = (dir) => {
+            if (fs.existsSync(dir)) {
+                const files = fs.readdirSync(dir);
+                files.forEach(file => {
+                    if (file.includes('_backup_') && file.endsWith('.json')) {
+                        const filePath = path.join(dir, file);
+                        const stats = fs.statSync(filePath);
+                        backupFiles.push({
+                            name: file,
+                            path: filePath,
+                            size: stats.size,
+                            created: stats.mtime
+                        });
+                    }
+                });
+            }
+        };
+        
+        searchBackups(path.join(dataPath, 'Entamoeba Histolytica'));
+        searchBackups(path.join(dataPath, 'Entamoeba Invadens'));
+        
+        // Sort by creation date (newest first)
+        backupFiles.sort((a, b) => new Date(b.created) - new Date(a.created));
+        
+        res.json({
+            success: true,
+            backups: backupFiles
+        });
+    } catch (error) {
+        console.error('Error listing backups:', error);
+        res.status(500).json({ error: 'Error listing backup files' });
+    }
+});
+
 app.listen(port, () => {
     console.log(`AmoebaDatabase server listening at http://localhost:${port}`);
+    console.log(`Admin panel available at http://localhost:${port}/admin`);
 });
